@@ -1,10 +1,21 @@
 import React, { Component, Fragment } from "react";
+import { withRouter } from "react-router-dom";
 
 class Login extends Component {
   state = {
     usuario: "",
-    senha: ""
+    senha: "",
+    error: ""
   };
+
+  componentWillMount() {
+    if (localStorage.getItem("atendente")) {
+      this.props.history.push({
+        pathname: "/painel",
+        state: { nome: localStorage.getItem("atendente") }
+      });
+    }
+  }
 
   onChange = e => {
     this.setState({
@@ -14,7 +25,42 @@ class Login extends Component {
 
   submitLogin = e => {
     e.preventDefault();
-    console.log(this.state);
+
+    const { usuario, senha } = this.state;
+    const user = {
+      usuario,
+      senha
+    };
+
+    fetch("http://localhost:5000/login", {
+      method: "POST",
+      body: JSON.stringify(user),
+      headers: {
+        "content-type": "application/json"
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.query !== "not ok") {
+          const { nome } = data;
+          localStorage.setItem("atendente", nome);
+          this.props.history.push({
+            pathname: "/painel",
+            state: { nome: data.nome }
+          });
+        } else {
+          this.setState({
+            ...this.state,
+            error: data.error
+          });
+          setTimeout(() => {
+            this.setState({
+              ...this.state,
+              error: ""
+            });
+          }, 2000);
+        }
+      });
   };
 
   render() {
@@ -75,6 +121,7 @@ class Login extends Component {
                 Login
               </button>
             </form>
+            <p className="text-danger">{this.state.error}</p>
           </div>
         </div>
       </Fragment>
@@ -82,4 +129,4 @@ class Login extends Component {
   }
 }
 
-export default Login;
+export default withRouter(Login);
