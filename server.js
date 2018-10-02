@@ -62,4 +62,6 @@ app.post("/login", (req, res) => {
 //Socket IO configurantion
 const io = socketIo(server);
 
-io.on("connection", client => {});
+io.on("connection", client => {
+  console.log(client.id);
+});
