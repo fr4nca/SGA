@@ -23,7 +23,7 @@ class Login extends Component {
     });
   };
 
-  submitLogin = e => {
+  submitLogin = async e => {
     e.preventDefault();
 
     const { usuario, senha } = this.state;
@@ -32,35 +32,35 @@ class Login extends Component {
       senha
     };
 
-    fetch("http://localhost:5000/login", {
+    const res = await fetch("http://localhost:5000/login", {
       method: "POST",
       body: JSON.stringify(user),
       headers: {
         "content-type": "application/json"
       }
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.query !== "not ok") {
-          const { nome } = data;
-          localStorage.setItem("atendente", nome);
-          this.props.history.push({
-            pathname: "/painel",
-            state: { nome: data.nome }
-          });
-        } else {
-          this.setState({
-            ...this.state,
-            error: data.error
-          });
-          setTimeout(() => {
-            this.setState({
-              ...this.state,
-              error: ""
-            });
-          }, 2000);
-        }
+    });
+
+    const data = await res.json();
+
+    if (data.query !== "not ok") {
+      const { nome } = data;
+      localStorage.setItem("atendente", nome);
+      this.props.history.push({
+        pathname: "/painel",
+        state: { nome: data.nome }
       });
+    } else {
+      this.setState({
+        ...this.state,
+        error: data.error
+      });
+      setTimeout(() => {
+        this.setState({
+          ...this.state,
+          error: ""
+        });
+      }, 2000);
+    }
   };
 
   render() {
